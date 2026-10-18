@@ -1,0 +1,24 @@
+InitDll=1
+ScanDevice=0
+dev 'MSO20BL(2.0)()' adcbit=8 mode=0
+DDS style 1 -> box=1 ampl=1500 bias=200 duty=30.0
+DDS style 2 -> box=2 ampl=1500 bias=200 duty=30.0
+DDS style 8 -> box=8 ampl=1500 bias=200 duty=30.0
+DDS style 10 -> box=10 ampl=1500 bias=200 duty=30.0
+DDS style 4 -> box=4 ampl=1500 bias=200 duty=30.0
+DDS style 20 -> box=20 ampl=1500 bias=200 duty=30.0
+DDS style 40 -> box=40 ampl=1500 bias=200 duty=30.0
+DDS sweep=1000..20000 t=50000000 loops=3 period=2000000 delay=1000 src=0
+IO state=000000af ready=0 get=000000af
+IO pulse 1000.0 25.0 inout4=1 dac=1234 en=1
+[N] Capture -> 4 ready=0; abort=0
+[N2] Capture -> 4 ready=1 tp=0.00
+SetOscCaptureMode=1 mode=0
+stream rates(14/14): 1000 2000 5000 10000 20000 50000 100000 200000 500000 1000000 2000000 5000000 10000000 20000000
+stream range=[-15000,15000] acdc=1 zoom=0.007415 bias=-0.945455
+StreamCapture(bad rate)=-1
+StreamCapture=0
+stream blocks=21 raw=21 total=2150400 need=2097152 failed=0 first=-0.027,-0.027
+SetOscCaptureMode=1 mode=1
+[P] Capture -> 4 ready=1
+FinishDll=1

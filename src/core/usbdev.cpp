@@ -164,8 +164,7 @@ void UsbDevice::Close()
     if (!open_)
         return;
     // let the modules' stop commands reach the device
-    for (int i = 0; i < 300 && !comm_error && !thread_done_ && (QueueSize() || busy_); i++)
-        SleepMs(10);
+    WaitIdle(3000);
     {
         std::lock_guard<std::mutex> lk(qm_);
         stop_ = true;
@@ -220,6 +219,16 @@ void UsbDevice::DestroyAllCmd(int module)
         else
             ++it;
     }
+}
+
+bool UsbDevice::WaitIdle(unsigned ms)
+{
+    for (unsigned t = 0; t < ms; t += 10) {
+        if (comm_error || thread_done_ || (!QueueSize() && !busy_))
+            return true;
+        SleepMs(10);
+    }
+    return false;
 }
 
 size_t UsbDevice::QueueSize()

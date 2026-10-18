@@ -83,6 +83,7 @@ public:
     void Cmd(uint8_t mod, uint8_t ch, uint8_t cmd, uint32_t value, const Payload* p = nullptr, bool top = false);
     void DestroyAllCmd(int module);   // -1 = all
     size_t QueueSize();
+    bool WaitIdle(unsigned ms);   // wait until all queued commands were executed
 
     // Reply routing
     void RegisterModule(uint8_t module, ModuleSink* s);

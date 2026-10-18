@@ -149,6 +149,8 @@ void Context::SetCaptureMode(DevEntry& e, bool stream)
         e.stream->Stop();
         e.stream.reset();
     }
+    if (e.dev)
+        e.dev->WaitIdle(1000);
     e.stream_mode = stream;
     UsbDevice* d = e.dev.get();
     DevEntry* ep = &e;

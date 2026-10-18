@@ -37,17 +37,19 @@ target_link_libraries(vmcore PUBLIC PkgConfig::LIBUSB Threads::Threads)
 add_library(vmmso SHARED src/api/vmmso_single.cpp)
 target_link_libraries(vmmso PRIVATE vmcore)
 target_include_directories(vmmso PUBLIC include)
-set_target_properties(vmmso PROPERTIES VERSION 1.22 SOVERSION 1)
+set_target_properties(vmmso PROPERTIES VERSION 1.22 SOVERSION 1.22)
 
 # multi device API, drop-in for the vendor libvmmultmso.so
 add_library(vmmultmso SHARED src/api/vmmultmso_multi.cpp)
 target_link_libraries(vmmultmso PRIVATE vmcore)
 target_include_directories(vmmultmso PUBLIC include)
-set_target_properties(vmmultmso PROPERTIES VERSION 1.22 SOVERSION 1)
+set_target_properties(vmmultmso PROPERTIES VERSION 1.22 SOVERSION 1.22)
 
 if(VMOPEN_BUILD_TESTS)
     add_executable(probe_single tests/probe_single.cpp)
     target_link_libraries(probe_single PRIVATE vmmso)
+    add_executable(probe_multi tests/probe_multi.cpp)
+    target_link_libraries(probe_multi PRIVATE vmmultmso)
 endif()
 
 include(GNUInstallDirs)

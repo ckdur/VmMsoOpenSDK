@@ -224,8 +224,9 @@ void IoDevice::OnReply(const uint8_t* p, size_t n, bool)
     if (n < 4 || p[2] != 0x32)
         return;
     uint32_t st = 0xffffffff;
-    if (p[0] == MODULE_IO && p[3] == 1 && n >= 6)
-        st = RdBe16(p + 4);
+    // the device answers with one state byte; the vendor reads a little endian u16
+    if (p[0] == MODULE_IO && p[3] == 1 && n >= 5)
+        st = p[4] | (n >= 6 ? (uint32_t)p[5] << 8 : 0);
     if (on_state)
         on_state(st);
 }
