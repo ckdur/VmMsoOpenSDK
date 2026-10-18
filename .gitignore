@@ -4,3 +4,7 @@ tools/usbtrace/libusbtrace.so
 tools/vmping/vmping
 traces/o[0-9]*.txt
 traces/v[0-9]*.txt
+traces/gui_*
+traces/sig_our.txt
+traces/our_*
+traces/ref_probe2.txt
