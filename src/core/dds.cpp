@@ -175,7 +175,7 @@ DdsDevice::DdsDevice(UsbDevice* dev) : dev_(dev)
     const DdsDesc& d = dev_->info.dds;
     ch_.resize(d.ChannelNum());
     for (auto& c : ch_) {
-        c.style = d.boxing.empty() ? BOX_SINE : d.boxing[0].style;
+        c.style = d.boxing.empty() ? (unsigned)BOX_SINE : (unsigned)d.boxing[0].style;
         c.buf.assign((size_t)d.depth_kb << 10, 0);
         c.arb.assign((size_t)d.depth_kb << 10, 0);
     }
