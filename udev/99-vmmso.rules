@@ -1,0 +1,4 @@
+# Vimu MSO oscilloscopes (VID d4a2, PID 5662 / 5663): allow access for the
+# logged in user (uaccess) and members of the plugdev group.
+SUBSYSTEM=="usb", ATTR{idVendor}=="d4a2", ATTR{idProduct}=="5662", MODE="0660", GROUP="plugdev", TAG+="uaccess"
+SUBSYSTEM=="usb", ATTR{idVendor}=="d4a2", ATTR{idProduct}=="5663", MODE="0660", GROUP="plugdev", TAG+="uaccess"

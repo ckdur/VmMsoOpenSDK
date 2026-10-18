@@ -1,6 +1,6 @@
 MIT License
 
-Copyright (c) 2026 vimu
+Copyright (c) 2026 VmMsoOpenSDK contributors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -19,3 +19,11 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+-------------------------------------------------------------------------------
+include/VmMsoLib.h, include/VmMultMsoLib.h, include/vmsignal/ and gui/VimuLink/
+come from https://github.com/vimu-tech/VmMsoSDK:
+
+Copyright (c) 2026 vimu
+
+Distributed under the same MIT License terms as above.
