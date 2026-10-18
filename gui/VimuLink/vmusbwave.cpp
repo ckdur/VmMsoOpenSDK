@@ -514,6 +514,18 @@ void CALLBACK VmUsbWave::UsbDevAddCallBack(void* ppara, unsigned int dev_id)
         vmusbwave->meterTextTop = "";
         vmusbwave->meterTextBottom = "";
         emit vmusbwave->meterTextChanged();
+
+        // test hook (VmMsoOpenSDK): VIMULINK_AUTOCAPTURE=1 starts capturing,
+        // VIMULINK_AUTOCAPTURE=stream starts in stream mode
+        if (qEnvironmentVariableIsSet("VIMULINK_AUTOCAPTURE"))
+        {
+            bool stream = qgetenv("VIMULINK_AUTOCAPTURE") == "stream";
+            QMetaObject::invokeMethod(vmusbwave, [vmusbwave, stream]{
+                if (stream)
+                    vmusbwave->setWorkMode(OscStream);
+                vmusbwave->setCaptureEnable(true);
+            }, Qt::QueuedConnection);
+        }
     }
     else
     {
