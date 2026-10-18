@@ -1,0 +1,48 @@
+InitDll=1
+Dev (bus 5, device 6): D4A2 - 5662 
+libusb_release_interface(0) failed:[LIBUSB_ERROR_NOT_FOUND] 
+ScanDevice=0
+IsDevAvailable=1
+GetDeviceDesString=1 'MSO20BL(2.0)()'
+OnlyId=0fd03126 0fd03126
+OscChannelNum=2 RangeMinmV=-15000 RangeMaxmV=15000
+SampleRates(17): 1000 2000 5000 10000 20000 50000 100000 200000 500000 1000000 2000000 5000000 10000000 20000000 50000000 100000000 200000000
+SampleRate=200000000 Memory=32768 KB
+HardTrig=1 TrigMode=0 Style=1 Src=0 Level=0 Sense=500 PreTrig=50(1) Force=1
+PulseWidth min=500 max=100000000 down=500 up=1000
+ch0 AcDc support=1 val=0
+ch1 AcDc support=1 val=0
+RollMode=0
+DDS=1 ch=1 depth=8192
+DDS styles(7): 1 2 8 10 4 20 40
+DDS style 1 ampl=6800 bias=[-2000,2000]
+DDS style 2 ampl=6800 bias=[-2000,2000]
+DDS style 8 ampl=6800 bias=[-2000,2000]
+DDS style 10 ampl=6800 bias=[-2000,2000]
+DDS style 4 ampl=6800 bias=[-2000,2000]
+DDS style 20 ampl=0 bias=[-3400,3400]
+DDS style 40 ampl=6800 bias=[-2000,2000]
+DDS0 mode=0 box=1 freq=1000.000000 duty=50.000000 phase=0.000000 ampl=1000 bias=0 en=0
+IO=1 num=8
+SampleRate now=20000000
+DDS0 enabled freq=1000.000000 ampl=2000
+[A] Capture(8,3) -> 8
+[A] IsDataReady=0 TriggerPoint=4090.000000 LogicTP=4090.000000
+[A] ch0 n=8192 nadc=8192 min=-0.1346 max=0.0269 avg=-0.0578 zoom=0.053825 bias=-6.862655 res=0.053825 outrange=0
+[A] ch0 adc[0..16]: 7f 7f 7f 7f 7f 7f 7f 7f 7e 7e 7e 7f 7f 7e 7f 7e
+[A] ch1 n=8192 nadc=8192 min=-0.0803 max=0.0268 avg=-0.0559 zoom=0.053530 bias=-6.825034 res=0.053530 outrange=0
+[A] ch1 adc[0..16]: 7f 7f 7f 7f 7f 7f 7f 7e 7f 7e 7f 7e 7f 7f 7f 7e
+[A] logic n=0 first:
+[B] Capture(4,1) -> 4
+[B] IsDataReady=0 TriggerPoint=1914.500000 LogicTP=1914.500000
+[B] ch0 n=4096 nadc=4096 min=-0.0148 max=0.0148 avg=0.0021 zoom=0.009888 bias=-1.260759 res=0.009888 outrange=0
+[B] ch0 adc[0..16]: 80 80 80 80 80 80 80 80 80 80 7f 7f 7f 81 7f 80
+[B] logic n=0 first:
+[C] Capture(16,3) -> 16
+[C] IsDataReady=0 TriggerPoint=8138.000000 LogicTP=8138.000000
+[C] ch0 n=16384 nadc=16384 min=-0.0049 max=0.0346 avg=0.0140 zoom=0.009888 bias=-1.260759 res=0.009888 outrange=0
+[C] ch0 adc[0..16]: 80 80 80 80 80 80 80 80 80 81 82 81 81 81 80 81
+[C] ch1 n=16384 nadc=16384 min=-0.1338 max=0.0268 avg=-0.0492 zoom=0.053530 bias=-6.825034 res=0.053530 outrange=0
+[C] ch1 adc[0..16]: 7e 7e 7e 7e 7e 7e 7e 7f 7f 7f 7f 7e 7e 7f 7d 7e
+[C] logic n=0 first:
+FinishDll=1

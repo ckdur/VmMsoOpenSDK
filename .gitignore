@@ -1,0 +1,6 @@
+build/
+build-*/
+tools/usbtrace/libusbtrace.so
+tools/vmping/vmping
+traces/o[0-9]*.txt
+traces/v[0-9]*.txt
