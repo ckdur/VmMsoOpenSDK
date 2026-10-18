@@ -124,8 +124,10 @@ protected:
     unsigned InputZoomFor(unsigned ch, double min_v, double max_v) const;
     unsigned ZoomFor(unsigned ch, unsigned in, double min_v, double max_v) const;
     unsigned Sample2Index(unsigned rate) const;
-    unsigned BlockAlign() const;
-    unsigned BytesPerSample() const;
+    bool Wide() const;                 // 12 bit models: samples are 16 bit words
+    unsigned BlockAlign() const;       // words per sample of all captured channels
+    unsigned WordBytes() const;        // bytes per word in the transfer buffer
+    unsigned BlockBytes() const { return BlockAlign() * WordBytes(); }
     int CalDataIndex(uint16_t mask, unsigned ch) const;
     bool ChannelCaptured(uint16_t mask, unsigned ch) const;
     unsigned AnalogChannelNum(uint16_t mask) const;

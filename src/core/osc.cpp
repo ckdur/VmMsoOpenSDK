@@ -163,32 +163,81 @@ bool OscCard::ChannelCaptured(uint16_t mask, unsigned c) const
     return c < 4 && ((mask >> c) & 1);
 }
 
+// word offset of a channel inside a sample block (logic data follows the analog channels)
 int OscCard::CalDataIndex(uint16_t mask, unsigned c) const
 {
     if (ChannelCaptured(mask, c)) {
         int idx = -1;
         for (unsigned i = 0; i <= c; i++)
             idx += (mask >> i) & 1;
-        return idx * (int)BytesPerSample();
+        return idx;
     }
     if (mask & 0x100)
-        return (int)(AnalogChannelNum(mask) * BytesPerSample());
+        return (int)AnalogChannelNum(mask);
     return -1;
 }
 
-unsigned OscCard::BytesPerSample() const { return 1; }
+bool OscCard::Wide() const
+{
+    return model_ == OSC_MSO21 || model_ == OSC_MSO21V2 || model_ == OSC_MSO21V2_2 || model_ == OSC_MSO21PLUS ||
+           model_ == OSC_MSO41;
+}
+
+unsigned OscCard::WordBytes() const
+{
+    if (!Wide())
+        return 1;
+    // the MSO21 Plus sends logic only captures as bytes
+    return model_ == OSC_MSO21PLUS && chmask_ == 0x100 ? 1 : 2;
+}
 
 unsigned OscCard::BlockAlign() const
 {
-    unsigned a = AnalogChannelNum(chmask_) * BytesPerSample();
-    if (chmask_ & 0x100)
-        a += dev_->info.logic.channel_num >> 3;
+    unsigned a = AnalogChannelNum(chmask_);
+    const unsigned an = a;
+    const bool logic = (chmask_ & 0x100) != 0;
+    const unsigned lc = dev_->info.logic.channel_num;
+    switch (model_) {
+    case OSC_MSO10:
+        if (logic)
+            a += lc >> 3;
+        if (a == 3)
+            a = 4;
+        break;
+    case OSC_MSO21:
+    case OSC_MSO21V2:
+    case OSC_MSO21V2_2:
+        if (logic && lc)
+            a += 1;
+        break;
+    case OSC_MSO21PLUS:
+        if (chmask_ == 0x100)
+            a = 1;
+        else if (logic && lc)
+            a += 1;
+        break;
+    case OSC_MSO41:
+        if (logic)
+            a += lc >> 4;
+        if (a == 3)
+            a = 4;
+        if (an == 0)
+            a *= 2;
+        break;
+    default:
+        if (logic)
+            a += lc >> 3;
+        break;
+    }
     return a;
 }
 
 unsigned OscCard::SampleAt(unsigned off, unsigned i) const
 {
-    return buf_[off + (size_t)i * BlockAlign()];
+    size_t w = off + (size_t)i * BlockAlign();
+    if (WordBytes() == 2)
+        return (unsigned)buf_[2 * w] | ((unsigned)buf_[2 * w + 1] << 8);
+    return buf_[w];
 }
 
 // --------------------------------------------------------------- commands
@@ -303,7 +352,7 @@ void OscCard::SendReadDataCmd()
     size_t bytes;
     {
         std::lock_guard<std::recursive_mutex> lk(m_);
-        bytes = (size_t)BlockAlign() * length_;
+        bytes = (size_t)BlockBytes() * length_;
         if (buf_.size() < bytes)
             buf_.resize(bytes);
     }
@@ -323,7 +372,9 @@ void OscCard::SendInputZoomCtrlCmd(unsigned c)
     int jz = (int)d.Jiaozhun(s.inzoom, s.zoom);
     Payload p(dev_->BigEndian());
     p.u16((uint16_t)jz);
-    if (!s.inzoom_sent) {
+    // most models get the opposite setting once first so the relay really switches
+    bool toggle = model_ != OSC_MSO21PLUS && model_ != OSC_MSO41;
+    if (toggle && !s.inzoom_sent) {
         s.inzoom_sent = true;
         Cmd((uint8_t)(c + 1), 0x06, s.inzoom == 0, &p);
     }
@@ -335,17 +386,34 @@ void OscCard::SendZoomCtrlCmd(unsigned c)
     OscChannelState& s = ch_[c];
     const OscChannelDesc& d = dev_->info.osc.ch[c];
     int16_t dac = s.zoom < d.zoom.size() ? d.zoom[s.zoom].dac : 0;
-    uint16_t a = (uint16_t)(int)(((double)(dac + 0x4e2) * 0.5 * 4096.0) / 3300.0);
+    // DAC reference voltage (mV) and optional third word per model
+    double vref = 3300.0;
+    int extra = -1;
+    switch (model_) {
+    case OSC_MSO21: vref = 4250.0; break;
+    case OSC_MSO21V2:
+    case OSC_MSO21V2_2:
+    case OSC_MSO21PLUS: extra = 0x060f; break;
+    case OSC_MSO41:
+        vref = 2500.0;
+        extra = 0x07ff;
+        break;
+    default: break;
+    }
+    uint16_t a = (uint16_t)(int)((((double)dac + 1250.0) * 0.5 * 4096.0) / vref);
     uint16_t jz = (uint16_t)(int)d.Jiaozhun(s.inzoom, s.zoom);
     Payload p(dev_->BigEndian());
     p.u16(a).u16(jz);
+    if (extra >= 0)
+        p.u16((uint16_t)extra);
     Cmd((uint8_t)(c + 1), 0x04, s.zoom, &p);
 }
 
 void OscCard::SendAcDcCmd(unsigned c)
 {
     OscChannelState& s = ch_[c];
-    if (!s.acdc_sent) {
+    bool toggle = model_ == OSC_MSO10 || model_ == OSC_MSO20 || model_ == OSC_MSO21 || model_ == OSC_MSO21V2;
+    if (toggle && !s.acdc_sent) {
         s.acdc_sent = true;
         Payload p0(dev_->BigEndian());
         p0.u8((uint8_t)(1 - (s.ac ? 1 : 0)));
@@ -574,19 +642,22 @@ unsigned OscCard::Capture(int length_kb, uint16_t mask, bool force_length)
 {
     std::lock_guard<std::recursive_mutex> lk(m_);
     abort_ = false;
+    const unsigned nch = ChannelNum();
+    const uint16_t all = (uint16_t)((1u << nch) - 1);
     if (chmask_ != mask) {
-        uint16_t m = mask & 0x103;
-        bool c1 = m & 1, c2 = m & 2, lg = m & 0x100;
-        if (m == 0x103)
-            lg = false, m = 3;
-        if (c1)
-            SendStartChannelCmd(1);
-        else
-            SendStopChannelCmd(1);
-        if (c2)
-            SendStartChannelCmd(2);
-        else
-            SendStopChannelCmd(2);
+        uint16_t m = mask & (0x100 | all);
+        bool lg = (m & 0x100) != 0;
+        // with every analog channel on there is no room for the logic data
+        if (m == (0x100 | all)) {
+            lg = false;
+            m = all;
+        }
+        for (unsigned c = 0; c < nch; c++) {
+            if ((m >> c) & 1)
+                SendStartChannelCmd((uint8_t)(c + 1));
+            else
+                SendStopChannelCmd((uint8_t)(c + 1));
+        }
         if (lg)
             SendLogicChannelStartCmd(0xffff);
         else
@@ -594,9 +665,11 @@ unsigned OscCard::Capture(int length_kb, uint16_t mask, bool force_length)
         chmask_ = m;
     }
     unsigned align = BlockAlign();
+    unsigned bytes = BlockBytes();
     if (!align)
         return 0;
-    unsigned long depth = HardMemoryDepth() / align;
+    // MSO10: memory is split in 4 blocks whatever the channel selection
+    unsigned long depth = model_ == OSC_MSO10 ? HardMemoryDepth() / 4 : HardMemoryDepth() / bytes;
     unsigned n = (unsigned)depth;
     if (!force_length) {
         unsigned rate = GetSample();
@@ -606,13 +679,18 @@ unsigned OscCard::Capture(int length_kb, uint16_t mask, bool force_length)
     if ((int)(length_kb * 0x400) <= (int)n)
         n = (unsigned)(length_kb * 0x400);
     length_ = (long)(int)n;
-    if (buf_.size() < (size_t)n * align)
-        buf_.resize((size_t)n * align);
-    unsigned front = CalFrontPercent(length_, front_percent_, (int)ChannelNum(), (int)align);
+    if (buf_.size() < (size_t)n * bytes)
+        buf_.resize((size_t)n * bytes);
+    unsigned front = CalFrontPercent(length_, front_percent_, (int)nch, (int)align);
     const auto& r = dev_->info.osc.sample_rates;
     unsigned maxr = r.empty() ? 1 : r.back();
     unsigned rate = GetSample();
     uint32_t t = rate ? (uint32_t)(((unsigned long)maxr * length_) / rate) : 0;
+    if (model_ == OSC_MSO20V4) {
+        uint32_t p5 = force_length && rate ? (uint32_t)(length_ / rate) : 0;
+        SendCaptureCmd0((uint32_t)length_, front, t, maxr / 10 - 1, p5, 0);
+        return (unsigned)(length_ >> 10);
+    }
     SendCaptureCmd0((uint32_t)length_, front, t, 0, 0, 0);
     return (unsigned)(length_ >> 10);
 }
@@ -711,12 +789,11 @@ void OscCard::DataUpdate()
     }
     int off = CalDataIndex(chmask_, (unsigned)c);
     unsigned n = (unsigned)length_;
-    unsigned align = BlockAlign();
     double z = Ad2VoltagePara() * TotalZoom((unsigned)c);
     double b = BiasContrl((unsigned)c);
     double L = level_v_;
     bool anyedge = style == 4 || style == 0x100 || style == 1 || style == 0x40 || style == 0x80;
-    auto val = [&](int i) { return (double)buf_[(size_t)off + (size_t)i * align] * z + b; };
+    auto val = [&](int i) { return (double)SampleAt((unsigned)off, (unsigned)i) * z + b; };
     if (!(tp < (double)n)) {
         trigger_point_ = logic_trigger_point_ = res;
         return;
@@ -790,13 +867,20 @@ unsigned OscCard::ReadVoltageDatas(unsigned c, double* out, unsigned len)
     unsigned long n = len;
     if (length_ <= n)
         n = length_;
-    unsigned align = BlockAlign();
     double para = Ad2VoltagePara();
     double zoom = TotalZoom(c);
     double bias = BiasContrl(c);
-    for (unsigned long i = 0; i < n; i++)
-        out[i] = (double)buf_[(size_t)off + i * align] * para * zoom + bias;
-    if (n > 6) {
+    if (WordBytes() == 1) {
+        unsigned align = BlockAlign();
+        const uint8_t* src = buf_.data() + off;
+        for (unsigned long i = 0; i < n; i++)
+            out[i] = (double)src[i * align] * para * zoom + bias;
+    } else {
+        for (unsigned long i = 0; i < n; i++)
+            out[i] = (double)SampleAt((unsigned)off, (unsigned)i) * para * zoom + bias;
+    }
+    // the first and last samples of a capture are not valid (not done by the MSO10)
+    if (n > 6 && model_ != OSC_MSO10) {
         double v = out[6];
         for (int i = 0; i < 6; i++)
             out[i] = v;
@@ -806,6 +890,7 @@ unsigned OscCard::ReadVoltageDatas(unsigned c, double* out, unsigned len)
     return (unsigned)n;
 }
 
+// 8 bit models return bytes, 12 bit models 16 bit words (buf is then an unsigned short array)
 unsigned OscCard::ReadADCDatas(unsigned c, uint8_t* out, unsigned len)
 {
     std::lock_guard<std::recursive_mutex> lk(m_);
@@ -817,10 +902,23 @@ unsigned OscCard::ReadADCDatas(unsigned c, uint8_t* out, unsigned len)
     unsigned long n = len;
     if (length_ <= n)
         n = length_;
-    unsigned align = BlockAlign();
+    bool fix = n > 6 && model_ != OSC_MSO10;
+    if (Wide()) {
+        uint16_t* o = reinterpret_cast<uint16_t*>(out);
+        for (unsigned long i = 0; i < n; i++)
+            o[i] = (uint16_t)SampleAt((unsigned)off, (unsigned)i);
+        if (fix) {
+            uint16_t v = o[6];
+            for (int i = 0; i < 6; i++)
+                o[i] = v;
+            uint16_t e = o[n - 5];
+            o[n - 1] = o[n - 2] = o[n - 3] = o[n - 4] = e;
+        }
+        return (unsigned)n;
+    }
     for (unsigned long i = 0; i < n; i++)
-        out[i] = buf_[(size_t)off + i * align];
-    if (n > 6) {
+        out[i] = (uint8_t)SampleAt((unsigned)off, (unsigned)i);
+    if (fix) {
         uint8_t v = out[6];
         for (int i = 0; i < 6; i++)
             out[i] = v;
@@ -830,18 +928,27 @@ unsigned OscCard::ReadADCDatas(unsigned c, uint8_t* out, unsigned len)
     return (unsigned)n;
 }
 
+// logic states; one byte per sample (8 channels) or one 16 bit word on 12 bit models
 unsigned OscCard::ReadLogicDatas(uint8_t* out, unsigned len)
 {
     std::lock_guard<std::recursive_mutex> lk(m_);
     if (!(chmask_ & 0x100))
         return 0;
+    unsigned off = AnalogChannelNum(chmask_);
+    if (Wide() && WordBytes() == 2) {
+        unsigned long n = len >> 1;
+        if (length_ < n)
+            n = length_;
+        uint16_t* o = reinterpret_cast<uint16_t*>(out);
+        for (unsigned long i = 0; i < n; i++)
+            o[i] = (uint16_t)SampleAt(off, (unsigned)i);
+        return (unsigned)n;
+    }
     unsigned long n = len;
     if (length_ <= n)
         n = length_;
-    unsigned off = AnalogChannelNum(chmask_) & 0xffff;
-    unsigned align = BlockAlign();
     for (unsigned long i = 0; i < n; i++)
-        out[i] = buf_[off + i * align];
+        out[i] = (uint8_t)SampleAt(off, (unsigned)i);
     return (unsigned)n;
 }
 
@@ -863,11 +970,10 @@ int OscCard::IsVoltageDatasOutRange(unsigned c)
             if (amax < v)
                 amax = v;
     }
-    unsigned align = BlockAlign();
     unsigned long last = length_ - 4;
     if (6 < last)
         for (unsigned long i = 6; i < last; i++) {
-            unsigned v = buf_[(size_t)off + i * align];
+            unsigned v = SampleAt((unsigned)off, (unsigned)i);
             if ((unsigned)(int)(top - 1.0) == v || amax == v)
                 return 1;
         }

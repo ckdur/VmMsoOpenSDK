@@ -1,6 +1,6 @@
 InitDll=1
 ScanDevice=0
-dev 'MSO20BL(2.0)()' adcbit=8 mode=0
+dev 'MSO20BL(2.0)()' adcbit=8 mode=0
 DDS style 1 -> box=1 ampl=1500 bias=200 duty=30.0
 DDS style 2 -> box=2 ampl=1500 bias=200 duty=30.0
 DDS style 8 -> box=8 ampl=1500 bias=200 duty=30.0

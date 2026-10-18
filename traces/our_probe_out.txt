@@ -1,28 +1,7 @@
-[vmopen    0.0000] InitDll.............. Log=0 Watchdog=0
-[vmopen    0.0125] Dev (bus 5, device 6): D4A2 - 5662
-[vmopen    0.1130] **********ScanDevice 0 **********
-[vmopen    0.1153] identified device:
-name=MSO20BL(2.0) hw=2.0 proto=12 table=mso20a_v2 modules=1b id=0fd03126
-osc: ch=2 adcbits=8 adc=[-0.500,0.500] zoomdiv=1000 mem=32768KB range=[-15000,15000]mV trig=1ff src=ff0003 acdc=1
-  ch0 inzoom: 208 2988 zoom: 110/-600 154/-450 217/-300 305/-150 429/0 603/150 847/300 1190/450 1673/600 jz: 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 adj: 0 0
-  ch1 inzoom: 208 2988 zoom: 110/-600 154/-450 217/-300 305/-150 429/0 603/150 847/300 1190/450 1673/600 jz: 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 adj: 0 0
-dds: ch=1 clk=100000000 depth=8K fbits=64 dacbits=14 zoomnum=3 trig=7 gate=3
-  ch0 vol=[-3400,3400]
-  box 1 vol=[-3400,3400] bias=[-2000,2000] f=[0.001,5e+06] step=0.001 sweep=1 burst=1
-  box 2 vol=[-3400,3400] bias=[-2000,2000] f=[0.001,2e+06] step=0.001 sweep=1 burst=1
-  box 8 vol=[-3400,3400] bias=[-2000,2000] f=[0.001,2e+06] step=0.001 sweep=0 burst=1
-  box 10 vol=[-3400,3400] bias=[-2000,2000] f=[0.001,2e+06] step=0.001 sweep=0 burst=1
-  box 4 vol=[-3400,3400] bias=[-2000,2000] f=[0.001,1e+06] step=0.001 sweep=1 burst=1
-  box 20 vol=[0,0] bias=[-3400,3400] f=[0.001,2e+06] step=0.001 sweep=0 burst=0
-  box 40 vol=[-3400,3400] bias=[-2000,2000] f=[0.001,2e+06] step=0.001 sweep=1 burst=1
-logic: ch=8 rates=17 mem=32768
-io: num=8 outstates=f dacs=1
-[vmopen    0.1171] handshake ok: MSO20BL(2.0)
-[vmopen    0.3134] **********UsbDevAddRemoveCallBack DEVICE_NOTICE_ID=1 MSO20BL(2.0)**********
 InitDll=1
 ScanDevice=0
 IsDevAvailable=1
-GetDeviceDesString=1 'MSO20BL(2.0)()'
+GetDeviceDesString=1 'MSO20BL(2.0)()'
 OnlyId=0fd03126 0fd03126
 OscChannelNum=2 RangeMinmV=-15000 RangeMaxmV=15000
 SampleRates(17): 1000 2000 5000 10000 20000 50000 100000 200000 500000 1000000 2000000 5000000 10000000 20000000 50000000 100000000 200000000
@@ -46,22 +25,22 @@ IO=1 num=8
 SampleRate now=20000000
 DDS0 enabled freq=1000.000000 ampl=2000
 [A] Capture(8,3) -> 8
-[A] IsDataReady=0 TriggerPoint=4074.000000 LogicTP=4074.000000
-[A] ch0 n=8192 nadc=8192 min=-0.0807 max=0.0269 avg=-0.0304 zoom=0.053825 bias=-6.862655 res=0.053825 outrange=0
-[A] ch0 adc[0..16]: 7f 7f 7f 7f 7f 7f 7f 7f 7f 7e 7f 7f 7f 7f 7f 7f
-[A] ch1 n=8192 nadc=8192 min=-0.0803 max=0.0268 avg=-0.0255 zoom=0.053530 bias=-6.825034 res=0.053530 outrange=0
-[A] ch1 adc[0..16]: 7f 7f 7f 7f 7f 7f 7f 7f 7f 7e 7f 7f 7f 7e 7f 7f
+[A] IsDataReady=0 TriggerPoint=4052.000000 LogicTP=4052.000000
+[A] ch0 n=8192 nadc=8192 min=-0.0807 max=0.0269 avg=-0.0397 zoom=0.053825 bias=-6.862655 res=0.053825 outrange=0
+[A] ch0 adc[0..16]: 7f 7f 7f 7f 7f 7f 7f 7e 7e 7e 7f 7f 7f 7e 7f 7e
+[A] ch1 n=8192 nadc=8192 min=-0.0803 max=0.0268 avg=-0.0303 zoom=0.053530 bias=-6.825034 res=0.053530 outrange=0
+[A] ch1 adc[0..16]: 7e 7e 7e 7e 7e 7e 7e 7f 7f 7f 7f 7f 7f 7f 7f 7f
 [A] logic n=0 first:
 [B] Capture(4,1) -> 4
 [B] IsDataReady=0 TriggerPoint=1920.000000 LogicTP=1920.000000
-[B] ch0 n=4096 nadc=4096 min=-0.0049 max=0.0247 avg=0.0127 zoom=0.009888 bias=-1.260759 res=0.009888 outrange=0
-[B] ch0 adc[0..16]: 80 80 80 80 80 80 80 81 80 81 81 81 80 80 81 80
+[B] ch0 n=4096 nadc=4096 min=-0.0049 max=0.0247 avg=0.0088 zoom=0.009888 bias=-1.260759 res=0.009888 outrange=0
+[B] ch0 adc[0..16]: 80 80 80 80 80 80 80 81 81 81 80 80 80 80 80 80
 [B] logic n=0 first:
 [C] Capture(16,3) -> 16
 [C] IsDataReady=0 TriggerPoint=8138.000000 LogicTP=8138.000000
-[C] ch0 n=16384 nadc=16384 min=0.0049 max=0.0346 avg=0.0170 zoom=0.009888 bias=-1.260759 res=0.009888 outrange=0
-[C] ch0 adc[0..16]: 81 81 81 81 81 81 81 81 81 81 81 81 81 81 81 81
-[C] ch1 n=16384 nadc=16384 min=-0.0803 max=0.0268 avg=-0.0193 zoom=0.053530 bias=-6.825034 res=0.053530 outrange=0
-[C] ch1 adc[0..16]: 7f 7f 7f 7f 7f 7f 7f 80 7f 7f 7f 7f 7f 7f 7f 7f
+[C] ch0 n=16384 nadc=16384 min=-0.0049 max=0.0346 avg=0.0167 zoom=0.009888 bias=-1.260759 res=0.009888 outrange=0
+[C] ch0 adc[0..16]: 80 80 80 80 80 80 80 80 82 81 81 81 81 81 81 81
+[C] ch1 n=16384 nadc=16384 min=-0.1338 max=0.0268 avg=-0.0251 zoom=0.053530 bias=-6.825034 res=0.053530 outrange=0
+[C] ch1 adc[0..16]: 7e 7e 7e 7e 7e 7e 7e 7f 7f 7f 7e 7f 7f 7f 7f 7e
 [C] logic n=0 first:
 FinishDll=1
