@@ -39,6 +39,23 @@ Use the libraries with an existing vendor build: put `build/` first in
 
 Set `VMOPEN_LOG=1` to get a log of the device communication on stderr.
 
+### macOS
+
+```sh
+brew install cmake pkg-config libusb qt
+cmake -B build -S .
+cmake --build build -j
+open build/gui/VimuLink/VimuLink.app
+```
+
+No udev rule or driver is needed: macOS lets user programs claim the device
+through libusb. The libraries are built as `libvmmso.1.22.dylib`,
+`libvmmultmso.1.22.dylib` and `libvmsignal.1.0.dylib` (`DYLD_LIBRARY_PATH`
+instead of `LD_LIBRARY_PATH`), and the GUI as an app bundle that saves its
+recordings in `~/Library/Application Support/VimuLink/datas`. Run
+`macdeployqt` on the bundle to make it self contained. `tools/usbtrace` and
+`tools/usbreset` are Linux only.
+
 ## Status
 
 Verified on an MSO20BL (hardware 2.0) by running the same programs on the

@@ -3,10 +3,21 @@
 #include <QCoreApplication>
 #include <QDir>
 #include <QDebug>
+#include <QStandardPaths>
 
 WaveFile::WaveFile()
 {
 
+}
+
+// next to the executable, except on macOS where it is inside the read-only .app bundle
+QString WaveFile::dataDirectory()
+{
+#ifdef Q_OS_MACOS
+    return QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + QDir::separator() + datasDir;
+#else
+    return QCoreApplication::applicationDirPath() + QDir::separator() + datasDir;
+#endif
 }
 
 WaveFile::~WaveFile()
@@ -20,7 +31,7 @@ bool WaveFile::startRecord(int sample, unsigned short captureChannel, unsigned i
                            double zoomch3, double biasch3, double zoomch4, double biasch4)
 {
     //检查目录是否存在
-    QString directoryPath = QCoreApplication::applicationDirPath() + QDir::separator() + datasDir;
+    QString directoryPath = dataDirectory();
     QDir directory(directoryPath);
     if (!directory.exists())
     {
@@ -250,7 +261,7 @@ bool WaveFile::stopRecord()
 // 统计指定目录下的文件个数，并删除最早的文件
 void WaveFile::processDirectory(int maxfilenum)
 {
-    QString directoryPath = QCoreApplication::applicationDirPath() + QDir::separator() + datasDir;
+    QString directoryPath = dataDirectory();
     QDir directory(directoryPath);
     if (!directory.exists())
     {

@@ -18,7 +18,7 @@
 #include <sys/syscall.h>
 #include <time.h>
 #include <unistd.h>
-#include <libusb-1.0/libusb.h>
+#include <libusb.h>
 
 static FILE *out;
 static int max_dump = 64;

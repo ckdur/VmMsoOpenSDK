@@ -31,6 +31,7 @@ public:
 private:
     bool writeDataSize(int64_t length);
     int64_t getDataStartPos();
+    QString dataDirectory();
 
     int mSample = 0;
     double mZoomCh1 = 1.0, mZoomCh2 = 1.0;

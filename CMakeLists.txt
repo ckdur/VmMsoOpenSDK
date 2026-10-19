@@ -85,4 +85,6 @@ endif()
 
 install(TARGETS vmmso vmmultmso vmsignal LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
 install(FILES include/VmMsoLib.h include/VmMultMsoLib.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-install(FILES udev/99-vmmso.rules DESTINATION lib/udev/rules.d OPTIONAL)
+if(NOT APPLE)
+    install(FILES udev/99-vmmso.rules DESTINATION lib/udev/rules.d OPTIONAL)
+endif()

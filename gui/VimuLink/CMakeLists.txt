@@ -54,10 +54,21 @@ target_compile_options(VimuLink PRIVATE -w)   # upstream code, keep the build qu
 target_link_libraries(VimuLink PRIVATE
     Qt${QT_VERSION_MAJOR}::Core Qt${QT_VERSION_MAJOR}::Quick Qt${QT_VERSION_MAJOR}::QuickControls2
     Qt${QT_VERSION_MAJOR}::Widgets vmmultmso vmsignal)
-set_target_properties(VimuLink PROPERTIES INSTALL_RPATH "$ORIGIN/../${CMAKE_INSTALL_LIBDIR}")
+if(APPLE)
+    # VimuLink.app/Contents/MacOS/VimuLink, the bundle is installed in bin
+    set_target_properties(VimuLink PROPERTIES
+        MACOSX_BUNDLE ON
+        MACOSX_BUNDLE_BUNDLE_NAME VimuLink
+        MACOSX_BUNDLE_GUI_IDENTIFIER org.vmmsoopensdk.VimuLink
+        MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
+        MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION}
+        INSTALL_RPATH "@executable_path/../../../../${CMAKE_INSTALL_LIBDIR}")
+else()
+    set_target_properties(VimuLink PROPERTIES INSTALL_RPATH "$ORIGIN/../${CMAKE_INSTALL_LIBDIR}")
+endif()
 
 if(QT_VERSION_MAJOR EQUAL 6)
     qt_finalize_executable(VimuLink)
 endif()
 
-install(TARGETS VimuLink RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(TARGETS VimuLink RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} BUNDLE DESTINATION ${CMAKE_INSTALL_BINDIR})

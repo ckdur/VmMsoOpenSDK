@@ -2,7 +2,7 @@
  * usage: vmping [hex-cmd ...]   e.g. vmping 02ff0b0000000000
  * Performs the serial reset + key exchange + identify, then sends each
  * given command and prints the reply. */
-#include <libusb-1.0/libusb.h>
+#include <libusb.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
